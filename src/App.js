@@ -1,25 +1,65 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import axios from 'axios'
+
+const searchingFor = (query) => {
+  return function(x) {
+    return x.name.toLowerCase().includes(query.toLowerCase()) || !query
+  }
+}
 
 class App extends Component {
+
+  constructor () {
+    super ()
+    this.state =  {
+      peoples: [],
+      query: ''
+    }
+    this._handlerSearch = this._handlerSearch.bind(this)
+  }
+
+  _onDisplay = () => {
+    axios.get("https://swapi.co/api/people/").then((res) => {
+      this.setState({
+        peoples: res.data.results
+      })
+    }).catch((err) => {
+      console.log(err)
+    })
+  }
+
+  _handlerSearch = (params) => {
+    this.setState({
+      query: params.target.value
+    })
+  }
+
+  componentDidMount = () => {
+    this._onDisplay()
+  }
+
   render() {
+    const {peoples, query} = this.state
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <div>
+        <h1>Starwars People</h1>
+        <form>
+          <input
+            placeholder="Search for..."
+            onChange={this._handlerSearch}
+          ></input>
+        </form>
+        <p>
+          {
+            peoples.filter(searchingFor(query)).map((data, index) => {
+              return (
+                <tr key={index}>
+                  <td>{data.name}</td>
+                </tr>
+              )
+            })
+          }
+        </p>
       </div>
     );
   }
